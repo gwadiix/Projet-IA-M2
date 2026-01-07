@@ -20,13 +20,11 @@ pipeline {
             steps {
                 dir('packer_project') {
                     script {
-                        // MODIFICATION ICI : On ajoute 'main' pour que ça marche aujourd'hui
-                        if (env.BRANCH_NAME == 'dev' || env.BRANCH_NAME == 'main') {
-                            echo "Construction de l'image en cours..."
-                            sh "packer build -var 'vsphere_user=${env.CREDS_USR}' -var 'vsphere_password=${env.CREDS_PSW}' ubuntu-ia.pkr.hcl"
-                        } else {
-                            echo "Pas de construction Packer."
-                        }
+                        // ON A SUPPRIMÉ LE IF : Ça va construire à tous les coups !
+                        echo "⚠️ Force Build : Construction de l'image en cours..."
+                        
+                        // Commande Packer
+                        sh "packer build -var 'vsphere_user=${env.CREDS_USR}' -var 'vsphere_password=${env.CREDS_PSW}' ubuntu-ia.pkr.hcl"
                     }
                 }
             }
