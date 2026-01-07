@@ -16,15 +16,16 @@ pipeline {
             }
         }
 
-        stage('🏗️ Construction Image (Packer)') {
+       stage('🏗️ Construction Image (Packer)') {
             steps {
                 dir('packer_project') {
                     script {
-                        if (env.BRANCH_NAME == 'dev') {
+                        // MODIFICATION ICI : On ajoute 'main' pour que ça marche aujourd'hui
+                        if (env.BRANCH_NAME == 'dev' || env.BRANCH_NAME == 'main') {
                             echo "Construction de l'image en cours..."
                             sh "packer build -var 'vsphere_user=${env.CREDS_USR}' -var 'vsphere_password=${env.CREDS_PSW}' ubuntu-ia.pkr.hcl"
                         } else {
-                            echo "Pas de construction Packer sur la branche principale."
+                            echo "Pas de construction Packer."
                         }
                     }
                 }
