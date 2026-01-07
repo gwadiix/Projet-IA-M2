@@ -1,0 +1,110 @@
+---
+- name: Installation IA Bare Metal (Script Officiel)
+  hosts: all
+  become: yes
+  vars:
+    model_name: "llama3.2:1b"
+
+  tasks:
+    # ------------------------------------------------------
+    # 1. INSTALLATION ROBUSTE VIA SCRIPT OFFICIEL
+    # ------------------------------------------------------
+    - name: Installer Curl
+      apt:
+        name: curl
+        state: present
+    
+    - name: Lancer le script d'installation Ollama
+      shell: curl -fsSL https://ollama.com/install.sh | sh
+      args:
+        creates: /usr/local/bin/ollama
+
+    # ------------------------------------------------------
+    # 2. CONFIGURATION RESEAU (Ecoute sur 0.0.0.0)
+    # ------------------------------------------------------
+    # On écrase la config par défaut pour autoriser l'accès externe
+    - name: Appliquer notre configuration Systemd personnalisée
+      copy:
+        src: files/ollama.service
+        dest: /etc/systemd/system/ollama.service
+      notify: Restart Ollama
+
+    - name: Attendre que l'API Ollama soit prête
+      wait_for:
+        port: 11434
+        delay: 5
+
+    - name: Télécharger le modèle IA (C'est ici que ça peut être long !)
+      command: "ollama pull {{ model_name }}"
+      register: pull_result
+      changed_when: "'success' in pull_result.stdout"
+      ignore_errors: yes 
+
+    # ------------------------------------------------------
+    # 3. INTERFACE WEB (PYTHON)
+    # ------------------------------------------------------
+    - name: Installer Python3-venv et Pip
+      apt:
+        name: 
+          - python3-venv
+          - python3-pip
+        state: present
+        update_cache: yes
+
+    - name: Créer dossier WebApp
+      file:
+        path: /opt/ia-webapp
+        state: directory
+        owner: ollama
+        group: ollama
+
+    - name: Créer venv Python
+      command: python3 -m venv /opt/ia-webapp/venv
+      args:
+        creates: /opt/ia-webapp/venv
+
+    - name: Installer Streamlit
+      pip:
+        name: [streamlit, requests]
+        virtualenv: /opt/ia-webapp/venv
+
+    - name: Copier le script Chat
+      copy:
+        src: files/app_chat.py
+        dest: /opt/ia-webapp/app.py
+        owner: ollama
+        group: ollama
+
+    - name: Service WebApp
+      copy:
+        content: |
+          [Unit]
+          Description=IA Web Interface
+          After=ollama.service
+          [Service]
+          User=ollama
+          WorkingDirectory=/opt/ia-webapp
+          ExecStart=/opt/ia-webapp/venv/bin/streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+          Restart=always
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/ia-web.service
+      notify: Restart WebApp
+
+    - name: Démarrer l'interface Web
+      service:
+        name: ia-web
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: Restart Ollama
+      service:
+        name: ollama
+        state: restarted
+        daemon_reload: yes
+    - name: Restart WebApp
+      service:
+        name: ia-web
+        state: restarted
+        daemon_reload: yes

@@ -1,0 +1,23 @@
+# --- Terraform ---
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl
+
+# --- Packer ---
+packer_cache/
+output-*/
+*.iso
+
+# --- Ansible ---
+*.retry
+
+# --- Python ---
+__pycache__/
+*.pyc
+venv/
+
+# --- Système ---
+.DS_Store
+.vscode/

@@ -1,0 +1,29 @@
+#cloud-config
+autoinstall:
+  version: 1
+  identity:
+    hostname: ubuntu-ia-template
+    username: quentin
+    realname: ADMquentin
+    # Hash de secours (correspond à "password")
+    password: "$6$nsYcCiNaagKj7dCM$EXRlyxuINDzJW/jrGkmQDAnlXGrL3cZpSBvM/ClepbVxLtPxZkXBWPu/9u.qCpP6OR.PtQUA5OX82OvckzlSA1"
+  
+  ssh:
+    install-server: true
+    allow-pw: true
+    # 👇 CETTE SECTION EST OBLIGATOIRE 👇
+    authorized-keys:
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIMWsDoiplM8U3DA6A9yUsFey3/HsJy7j0lGyDdF70sK root@DESKTOP-41N2HUP"
+
+  packages:
+    - open-vm-tools
+    - openssh-server
+
+  storage:
+    layout:
+      name: direct
+  user-data:
+    disable_root: false
+    timezone: Europe/Paris
+  late-commands:
+    - "echo 'quentin ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/quentin"
