@@ -11,21 +11,35 @@ packer {
   }
 }
 
-# --- VARIABLES VCENTER (LE CHEF) ---
-variable "vcenter_server" { default = "172.16.21.151" }
-variable "vcenter_user"   { default = "administrator@lab.local" }
-variable "vcenter_pass"   { default = "Vmware@2025!" }
+# --- 1. VARIABLES D'ENTRÉE (Celles que Jenkins remplit) ---
+variable "vsphere_server" {
+  type    = string
+  default = "172.16.21.151" 
+}
 
-# --- VARIABLES ESXI (L'OUVRIER) ---
+# Jenkins envoie "-var vsphere_user=...", donc on doit l'appeler pareil ici
+variable "vsphere_user" {
+  type    = string
+  default = "administrator@lab.local"
+}
+
+# Jenkins envoie "-var vsphere_password=...", donc on doit l'appeler pareil ici
+variable "vsphere_password" {
+  type      = string
+  sensitive = true
+  # Pas de default ici pour la sécurité, Jenkins DOIT le fournir
+}
+
+# --- VARIABLES ESXI ---
 variable "esxi_host"      { default = "172.16.21.102" }
 variable "datastore"      { default = "datastore1" }
 
 # --- CONFIGURATION DE L'IMAGE ---
 source "vsphere-iso" "ubuntu-ia" {
   # 1. ON SE CONNECTE AU VCENTER
-  vcenter_server      = var.vcenter_server
-  username            = var.vcenter_user
-  password            = var.vcenter_pass
+  vcenter_server      = var.vsphere_server
+  username            = var.vsphere_user      # <-- On utilise la variable de Jenkins
+  password            = var.vsphere_password  # <-- On utilise la variable de Jenkins
   insecure_connection = true
 
   # 2. ON CIBLE L'ESXI SPECIFIQUE
@@ -49,38 +63,34 @@ source "vsphere-iso" "ubuntu-ia" {
     network_card = "vmxnet3"
   }
 
-  # ISO (Ubuntu 22.04 LTS - Lien Stable)
+  # ISO (Ubuntu 22.04 LTS)
   iso_urls     = ["https://releases.ubuntu.com/22.04/ubuntu-22.04.5-live-server-amd64.iso"]
   iso_checksum = "sha256:9bc6028870aef3f74f4e16b900008179e78b130e6b0b9a140635434a46aa98b0"
 
-  # --- 🔴 CHANGEMENT MAJEUR ICI 🔴 ---
-  
-  # 1. On supprime "http_directory"
-  # 2. On ajoute la méthode CD-ROM (cidata)
+  # Méthode CD-ROM (cidata)
   cd_files = [
     "./http/user-data",
     "./http/meta-data"
   ]
   cd_label = "cidata" 
 
-  # 3. Nouvelle commande de boot (Plus de HTTP IP !)
+  # Commande de boot
   boot_wait = "10s"
   boot_command = [
     "c",
-    "linux /casper/vmlinuz --- autoinstall ds=nocloud", # On lui dit de chercher le CD 'nocloud'
+    "linux /casper/vmlinuz --- autoinstall ds=nocloud", 
     "<enter><wait>",
     "initrd /casper/initrd",
     "<enter><wait>",
     "boot<enter>"
   ]
-  # Connexion SSH pour Ansible (Doit correspondre au fichier user-data)
+  
+  # Connexion SSH pour Ansible
   ssh_username = "quentin"
   ssh_password = "password"
-  # On pointe vers le fichier de clé PRIVE (celui sans extension)
   ssh_private_key_file = "./packer_key"
   ssh_timeout  = "30m"
   
-  # Conversion en Template à la fin
   convert_to_template = true
 }
 
@@ -99,11 +109,9 @@ build {
     user          = "quentin"
     use_proxy     = false
     
-    # On force le mot de passe sudo
     extra_arguments = [
       "--extra-vars", "ansible_become_pass=password"
     ]
-    # On désactive la vérification de clé SSH pour éviter les blocages
     ansible_env_vars = [
       "ANSIBLE_HOST_KEY_CHECKING=False"
     ]
