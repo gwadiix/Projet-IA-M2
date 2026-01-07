@@ -22,10 +22,13 @@ stage('🏗️ Construction Image (Packer)') {
                     script {
                         echo "⚠️ Force Build : Construction de l'image en cours..."
                         
-                        // 1. D'ABORD : On initialise (télécharge les plugins)
+                        // 1. Initialisation
                         sh 'packer init ubuntu-ia.pkr.hcl'
 
-                        // 2. ENSUITE : On construit
+                        // 2. CORRECTION : On sécurise la clé SSH (Obligatoire pour Ansible)
+                        sh 'chmod 600 packer_key'
+
+                        // 3. Construction
                         sh 'packer build -force -var "vsphere_user=$CREDS_USR" -var "vsphere_password=$CREDS_PSW" ubuntu-ia.pkr.hcl'
                     }
                 }
