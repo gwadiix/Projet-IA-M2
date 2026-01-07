@@ -38,9 +38,12 @@ pipeline {
             steps {
                 dir('terraform_project') {
                     script {
-                        // On injecte les variables d'environnement pour Terraform
-                        // Terraform cherche automatiquement les variables qui commencent par TF_VAR_
-                        withEnv(["TF_VAR_vsphere_user=${env.CREDS_USR}", "TF_VAR_vsphere_password=${env.CREDS_PSW}"]) {
+                        // CORRECTION ICI : On ajoute l'IP du serveur (TF_VAR_vsphere_server)
+                        withEnv([
+                            "TF_VAR_vsphere_user=${env.CREDS_USR}",
+                            "TF_VAR_vsphere_password=${env.CREDS_PSW}",
+                            "TF_VAR_vsphere_server=172.16.21.102" 
+                        ]) {
                             sh 'terraform init'
                             sh 'terraform apply -auto-approve'
                         }
@@ -48,5 +51,3 @@ pipeline {
                 }
             }
         }
-    }
-}
