@@ -16,14 +16,16 @@ pipeline {
             }
         }
 
-       stage('🏗️ Construction Image (Packer)') {
+stage('🏗️ Construction Image (Packer)') {
             steps {
                 dir('packer_project') {
                     script {
-                        // ON A SUPPRIMÉ LE IF : Ça va construire à tous les coups !
                         echo "⚠️ Force Build : Construction de l'image en cours..."
                         
-                        // Commande Packer
+                        // 1. D'ABORD : On initialise (télécharge les plugins)
+                        sh 'packer init ubuntu-ia.pkr.hcl'
+
+                        // 2. ENSUITE : On construit
                         sh "packer build -var 'vsphere_user=${env.CREDS_USR}' -var 'vsphere_password=${env.CREDS_PSW}' ubuntu-ia.pkr.hcl"
                     }
                 }
