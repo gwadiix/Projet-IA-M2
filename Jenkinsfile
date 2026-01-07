@@ -26,7 +26,7 @@ stage('🏗️ Construction Image (Packer)') {
                         sh 'packer init ubuntu-ia.pkr.hcl'
 
                         // 2. ENSUITE : On construit
-                        sh "packer build -var 'vsphere_user=${env.CREDS_USR}' -var 'vsphere_password=${env.CREDS_PSW}' ubuntu-ia.pkr.hcl"
+                        sh 'packer build -var "vsphere_user=$CREDS_USR" -var "vsphere_password=$CREDS_PSW" ubuntu-ia.pkr.hcl'
                     }
                 }
             }
