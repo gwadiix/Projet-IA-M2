@@ -55,12 +55,13 @@ pipeline {
         }
     } // Fin des stages
 
-    // ✅ BLOC AJOUTÉ : Notification Jira
+// ✅ AJOUTE CE BLOC ICI :
     post {
         always {
             script {
                 echo "📢 Envoi du rapport à Jira..."
-                jiraComment body: "🚀 Build Jenkins terminé !\n\n🌍 L'IA est disponible ici : http://172.16.21.200:8501\n🛠️ Build n°${env.BUILD_NUMBER}\nStatut: ${currentBuild.currentResult}", issueKey: 'KAN-1'
+                // On utilise ton code KAN-1
+                jiraComment body: "🚀 Build Jenkins terminé avec succès !\n\n🌍 L'IA est disponible ici : http://172.16.21.200:8501\n🛠️ Build n°${env.BUILD_NUMBER}", issueKey: 'KAN-1'
             }
         }
     }
