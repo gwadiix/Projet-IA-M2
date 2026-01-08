@@ -56,12 +56,12 @@ pipeline {
     } // Fin des stages
 
 // ✅ BLOC CORRIGÉ
-    post {
+post {
         always {
             script {
                 echo "📢 Envoi du rapport à Jira..."
-                // On utilise jiraAddComment au lieu de jiraComment
-                jiraAddComment idOrKey: 'KAN-1', comment: "🚀 Build Jenkins terminé avec succès !\n\n🌍 L'IA est disponible ici : http://172.16.21.200:8501\n🛠️ Build n°${env.BUILD_NUMBER}"
+                // On ajoute 'site: URL_projet_IA'
+                jiraAddComment site: 'URL_projet_IA', idOrKey: 'KAN-1', comment: "🚀 Build Jenkins terminé avec succès !\n\n🌍 L'IA est disponible ici : http://172.16.21.200:8501\n🛠️ Build n°${env.BUILD_NUMBER}"
             }
         }
     }
