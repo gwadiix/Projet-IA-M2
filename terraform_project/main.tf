@@ -43,7 +43,7 @@ data "vsphere_virtual_machine" "template" {
 # --- 3. DÉPLOIEMENT OPTIMISÉ IA ---
 
 resource "vsphere_virtual_machine" "vm_ia" {
-  name             = "IA-OLLAMA-PROD-01"
+  name             = "IA-OLLAMA-PROD-02"
   
   # Placement sur l'hôte
   resource_pool_id = data.vsphere_host.host.resource_pool_id
