@@ -35,15 +35,16 @@ stage('🏗️ Construction Image (Packer)') {
             }
         }
 
-        stage('🚀 Déploiement Infra (Terraform)') {
+stage('🚀 Déploiement Infra (Terraform)') {
             steps {
                 dir('terraform_project') {
                     script {
-                        // Injection des variables pour Terraform (User, Pass, et IP Serveur)
+                        // Injection des variables pour Terraform
                         withEnv([
                             "TF_VAR_vsphere_user=${env.CREDS_USR}",
                             "TF_VAR_vsphere_password=${env.CREDS_PSW}",
-                            "TF_VAR_vsphere_server=172.16.21.102" 
+                            // CORRECTION ICI : On vise le vCenter (.151) et plus l'ESXi (.102)
+                            "TF_VAR_vsphere_server=172.16.21.151" 
                         ]) {
                             sh 'terraform init'
                             sh 'terraform apply -auto-approve'
