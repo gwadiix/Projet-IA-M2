@@ -16,7 +16,7 @@ pipeline {
             }
         }
 
-stage('🏗️ Construction Image (Packer)') {
+        stage('🏗️ Construction Image (Packer)') {
             steps {
                 dir('packer_project') {
                     script {
@@ -35,7 +35,7 @@ stage('🏗️ Construction Image (Packer)') {
             }
         }
 
-stage('🚀 Déploiement Infra (Terraform)') {
+        stage('🚀 Déploiement Infra (Terraform)') {
             steps {
                 dir('terraform_project') {
                     script {
@@ -43,7 +43,7 @@ stage('🚀 Déploiement Infra (Terraform)') {
                         withEnv([
                             "TF_VAR_vsphere_user=${env.CREDS_USR}",
                             "TF_VAR_vsphere_password=${env.CREDS_PSW}",
-                            // CORRECTION ICI : On vise le vCenter (.151) et plus l'ESXi (.102)
+                            // On vise le vCenter (.151)
                             "TF_VAR_vsphere_server=172.16.21.151" 
                         ]) {
                             sh 'terraform init'
@@ -53,5 +53,16 @@ stage('🚀 Déploiement Infra (Terraform)') {
                 }
             }
         }
-    } // Fin stages
+    } // Fin des stages
+
+    // ✅ BLOC AJOUTÉ : Notification Jira
+    post {
+        always {
+            script {
+                echo "📢 Envoi du rapport à Jira..."
+                jiraComment body: "🚀 Build Jenkins terminé !\n\n🌍 L'IA est disponible ici : http://172.16.21.200:8501\n🛠️ Build n°${env.BUILD_NUMBER}\nStatut: ${currentBuild.currentResult}", issueKey: 'KAN-1'
+            }
+        }
+    }
+
 } // Fin pipeline
