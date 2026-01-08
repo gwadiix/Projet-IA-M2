@@ -55,13 +55,13 @@ pipeline {
         }
     } // Fin des stages
 
-// ✅ AJOUTE CE BLOC ICI :
+// ✅ BLOC CORRIGÉ
     post {
         always {
             script {
                 echo "📢 Envoi du rapport à Jira..."
-                // On utilise ton code KAN-1
-                jiraComment body: "🚀 Build Jenkins terminé avec succès !\n\n🌍 L'IA est disponible ici : http://172.16.21.200:8501\n🛠️ Build n°${env.BUILD_NUMBER}", issueKey: 'KAN-1'
+                // On utilise jiraAddComment au lieu de jiraComment
+                jiraAddComment idOrKey: 'KAN-1', comment: "🚀 Build Jenkins terminé avec succès !\n\n🌍 L'IA est disponible ici : http://172.16.21.200:8501\n🛠️ Build n°${env.BUILD_NUMBER}"
             }
         }
     }
